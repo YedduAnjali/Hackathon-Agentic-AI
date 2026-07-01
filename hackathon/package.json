@@ -1,0 +1,17 @@
+{
+  "name": "agentic-ai-platform",
+  "version": "1.0.0",
+  "description": "Autonomous Agentic AI Platform for Personalized Learning and Workflows",
+  "main": "backend/server.js",
+  "scripts": {
+    "dev:backend": "cd backend && nodemon server.js",
+    "dev:frontend": "cd frontend && npm run dev",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "start:backend": "cd backend && node server.js",
+    "start:frontend": "cd frontend && npm run build && npm run preview",
+    "verify": "node scripts/verify-setup.js"
+  },
+  "keywords": ["ai", "agentic", "llm", "automation", "n8n"],
+  "author": "",
+  "license": "MIT"
+}

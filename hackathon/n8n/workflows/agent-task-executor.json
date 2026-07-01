@@ -1,0 +1,280 @@
+{
+  "name": "Agent Task Executor",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "agent"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.workflowType }}",
+              "operation": "equal",
+              "value2": "task-executor"
+            }
+          ]
+        }
+      },
+      "id": "if-task-executor",
+      "name": "If Task Executor",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process task execution\nconst task = $input.item.json.body.task;\nconst data = $input.item.json.body.data;\n\nreturn {\n  json: {\n    task,\n    data,\n    executed: true,\n    timestamp: new Date().toISOString(),\n    result: `Task '${task}' executed successfully`\n  }\n};"
+      },
+      "id": "process-task",
+      "name": "Process Task",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.workflowType }}",
+              "operation": "equal",
+              "value2": "study-plan"
+            }
+          ]
+        }
+      },
+      "id": "if-study-plan",
+      "name": "If Study Plan",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create study plan\nconst goal = $input.item.json.body.goal || 'Learning goal';\nconst duration = $input.item.json.body.duration || '4 weeks';\n\nreturn {\n  json: {\n    plan: {\n      goal,\n      duration,\n      modules: [\n        { week: 1, topics: ['Introduction', 'Basics'] },\n        { week: 2, topics: ['Intermediate Concepts'] },\n        { week: 3, topics: ['Advanced Topics'] },\n        { week: 4, topics: ['Practice & Projects'] }\n      ],\n      resources: ['Documentation', 'Tutorials', 'Practice Exercises']\n    },\n    created: true,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "create-study-plan",
+      "name": "Create Study Plan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.workflowType }}",
+              "operation": "equal",
+              "value2": "notification"
+            }
+          ]
+        }
+      },
+      "id": "if-notification",
+      "name": "If Notification",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [450, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Send notification\nconst message = $input.item.json.body.message || 'Notification from Agent';\nconst recipient = $input.item.json.body.recipient || 'user';\n\nreturn {\n  json: {\n    notification: {\n      message,\n      recipient,\n      sent: true,\n      method: 'email', // Could be email, SMS, push, etc.\n      timestamp: new Date().toISOString()\n    }\n  }\n};"
+      },
+      "id": "send-notification",
+      "name": "Send Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.workflowType }}",
+              "operation": "equal",
+              "value2": "scheduler"
+            }
+          ]
+        }
+      },
+      "id": "if-scheduler",
+      "name": "If Scheduler",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [450, 600]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Schedule a task\nconst taskTitle = $input.item.json.body.taskTitle || 'Scheduled Task';\nconst scheduledTime = $input.item.json.body.scheduledTime || new Date().toISOString();\n\nreturn {\n  json: {\n    scheduled: {\n      task: taskTitle,\n      scheduledTime,\n      status: 'scheduled',\n      timestamp: new Date().toISOString()\n    }\n  }\n};"
+      },
+      "id": "schedule-task",
+      "name": "Schedule Task",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 500]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "respond",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "webhook": {
+      "main": [
+        [
+          {
+            "node": "if-task-executor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if-task-executor": {
+      "main": [
+        [
+          {
+            "node": "process-task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "if-study-plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if-study-plan": {
+      "main": [
+        [
+          {
+            "node": "create-study-plan",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "if-notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if-notification": {
+      "main": [
+        [
+          {
+            "node": "send-notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "if-scheduler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if-scheduler": {
+      "main": [
+        [
+          {
+            "node": "schedule-task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "process-task": {
+      "main": [
+        [
+          {
+            "node": "respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create-study-plan": {
+      "main": [
+        [
+          {
+            "node": "respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send-notification": {
+      "main": [
+        [
+          {
+            "node": "respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "schedule-task": {
+      "main": [
+        [
+          {
+            "node": "respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "versionId": "1"
+}
